@@ -8,6 +8,8 @@
 
 //! Various number theoretic utility functions used in the library.
 
+use std::prelude::v1::*;
+
 /// Euclidean GCD implementation (recursive). The first member of the returned
 /// triplet is the GCD of `a` and `b`.
 pub fn gcd(a: i64, b: i64) -> (i64, i64, i64) {
@@ -21,7 +23,7 @@ pub fn gcd(a: i64, b: i64) -> (i64, i64, i64) {
     }
 }
 
-#[test]
+#[cfg(feature = "with-testing")]
 fn test_gcd() {
     assert_eq!(gcd(12, 16), (4, -1, 1));
 }
@@ -37,7 +39,7 @@ pub fn mod_inverse(k: i64, prime: i64) -> i64 {
     (prime + r) % prime
 }
 
-#[test]
+#[cfg(feature = "with-testing")]
 fn test_mod_inverse() {
     assert_eq!(mod_inverse(3, 7), 5);
 }
@@ -59,7 +61,7 @@ pub fn mod_pow(mut x: i64, mut e: u32, prime: i64) -> i64 {
     acc
 }
 
-#[test]
+#[cfg(feature = "with-testing")]
 fn test_mod_pow() {
     assert_eq!(mod_pow(2, 0, 17), 1);
     assert_eq!(mod_pow(2, 3, 17), 8);
@@ -95,7 +97,7 @@ pub fn fft2_inverse(a_point: &[i64], omega: i64, prime: i64) -> Vec<i64> {
     data.iter().map(|a| zp.to_i64(*a)).collect()
 }
 
-#[test]
+#[cfg(feature = "with-testing")]
 fn test_fft2() {
     // field is Z_433 in which 354 is an 8th root of unity
     let prime = 433;
@@ -109,7 +111,7 @@ fn test_fft2() {
     )
 }
 
-#[test]
+#[cfg(feature = "with-testing")]
 fn test_fft2_inverse() {
     // field is Z_433 in which 354 is an 8th root of unity
     let prime = 433;
@@ -145,7 +147,7 @@ pub fn fft3_inverse(a_point: &[i64], omega: i64, prime: i64) -> Vec<i64> {
     data.iter().map(|a| zp.to_i64(*a)).collect()
 }
 
-#[test]
+#[cfg(feature = "with-testing")]
 fn test_fft3() {
     // field is Z_433 in which 150 is an 9th root of unity
     let prime = 433;
@@ -156,7 +158,7 @@ fn test_fft3() {
     assert_eq!(a_point, vec![45, 404, 407, 266, 377, 47, 158, 17, 20])
 }
 
-#[test]
+#[cfg(feature = "with-testing")]
 fn test_fft3_inverse() {
     // field is Z_433 in which 150 is an 9th root of unity
     let prime = 433;
@@ -219,7 +221,7 @@ pub fn newton_interpolation_general<'a>(
     }
 }
 
-#[test]
+#[cfg(feature = "with-testing")]
 fn test_newton_interpolation_general() {
     let prime = 17;
 
@@ -292,7 +294,7 @@ fn compute_newton_coefficients(points: &[i64], values: &[i64], prime: i64) -> Ve
     store.iter().map(|&(_, _, v)| v).collect()
 }
 
-#[test]
+#[cfg(feature = "with-testing")]
 fn test_compute_newton_coefficients() {
     let points = vec![5, 6, 7, 8, 9];
     let values = vec![8, 16, 4, 13, 16];
@@ -319,7 +321,7 @@ pub fn positivise(values: &[i64], n: i64) -> Vec<i64> {
 //        .fold(0, |a, b| (a + b) % prime)
 // }
 //
-// #[test]
+// #[cfg(feature="with-testing")]
 // fn test_mod_evaluate_polynomial_naive() {
 //     let poly = vec![1,2,3,4,5,6];
 //     let point = 5;
@@ -338,10 +340,34 @@ pub fn mod_evaluate_polynomial(coefficients: &[i64], point: i64, prime: i64) -> 
     tail.fold(head, |partial, coef| (partial * point + coef) % prime)
 }
 
-#[test]
+#[cfg(feature = "with-testing")]
 fn test_mod_evaluate_polynomial() {
     let poly = vec![1, 2, 3, 4, 5, 6];
     let point = 5;
     let prime = 17;
     assert_eq!(mod_evaluate_polynomial(&poly, point, prime), 4);
+}
+
+#[cfg(feature = "with-testing")]
+pub mod tests {
+    use std::prelude::v1::*;
+
+    use testing::*;
+
+    use super::*;
+
+    pub fn do_rsgx_tests() -> usize {
+        run_tests!(
+            test_compute_newton_coefficients,
+            test_gcd,
+            test_fft2,
+            test_fft2_inverse,
+            test_fft3,
+            test_fft3_inverse,
+            test_mod_evaluate_polynomial,
+            test_mod_inverse,
+            test_mod_pow,
+            test_newton_interpolation_general
+        )
+    }
 }

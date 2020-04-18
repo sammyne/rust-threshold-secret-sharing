@@ -9,6 +9,8 @@
 //! Packed (or ramp) variant of Shamir secret sharing,
 //! allowing efficient sharing of several secrets together.
 
+use std::prelude::v1::*;
+
 use crate::numtheory::{fft2_inverse, fft3, mod_pow};
 use rand;
 
@@ -137,7 +139,7 @@ impl PackedSecretSharing {
         // sample randomness using secure randomness
         use rand::distributions::Sample;
         let mut range = rand::distributions::range::Range::new(0, self.prime - 1);
-        let mut rng = rand::OsRng::new().unwrap();
+        let mut rng = rand::SgxRng::new().unwrap();
         let randomness: Vec<i64> = (0..self.threshold)
             .map(|_| range.sample(&mut rng) as i64)
             .collect();
@@ -199,13 +201,29 @@ impl PackedSecretSharing {
     }
 }
 
-#[cfg(test)]
-mod tests {
+//#[#[cfg(feature="with-testing")]]
+#[cfg(feature = "with-testing")]
+pub mod tests {
+    use std::prelude::v1::*;
+
+    use testing::*;
+
+    pub fn do_rsgx_tests() -> usize {
+        run_tests!(
+            test_evaluate_polynomial,
+            test_large_share,
+            test_recover_polynomial,
+            test_share,
+            test_share_additive_homomorphism,
+            test_share_multiplicative_homomorphism,
+            test_share_reconstruct
+        )
+    }
 
     use super::*;
     use crate::numtheory::*;
 
-    #[test]
+    //#[test]
     fn test_recover_polynomial() {
         let ref pss = PSS_4_8_3;
         let secrets = vec![1, 2, 3];
@@ -217,7 +235,7 @@ mod tests {
         );
     }
 
-    #[test]
+    //#[test]
     #[cfg_attr(rustfmt, rustfmt_skip)]
     fn test_evaluate_polynomial() {
         let ref pss = PSS_4_26_3;
@@ -233,7 +251,7 @@ mod tests {
         );
     }
 
-    #[test]
+    //#[test]
     #[cfg_attr(rustfmt, rustfmt_skip)]
     fn test_share() {
         let ref pss = PSS_4_26_3;
@@ -260,7 +278,7 @@ mod tests {
         assert_eq!(positivise(&recovered_secrets, pss.prime), secrets);
     }
 
-    #[test]
+    //#[test]
     fn test_large_share() {
         let ref pss = PSS_155_19682_100;
         let secrets = vec![5; pss.secret_count];
@@ -268,7 +286,7 @@ mod tests {
         assert_eq!(shares.len(), pss.share_count);
     }
 
-    #[test]
+    //#[test]
     fn test_share_reconstruct() {
         let ref pss = PSS_4_26_3;
         let secrets = vec![5, 6, 7];
@@ -288,7 +306,7 @@ mod tests {
         assert_eq!(positivise(&recovered_secrets, pss.prime), secrets);
     }
 
-    #[test]
+    //#[test]
     fn test_share_additive_homomorphism() {
         let ref pss = PSS_4_26_3;
 
@@ -314,7 +332,7 @@ mod tests {
         assert_eq!(positivise(&recovered_secrets, pss.prime), vec![5, 7, 9]);
     }
 
-    #[test]
+    //#[test]
     fn test_share_multiplicative_homomorphism() {
         let ref pss = PSS_4_26_3;
 
@@ -364,7 +382,7 @@ pub mod paramgen {
         return true;
     }
 
-    #[test]
+    //#[test]
     fn test_check_prime_form() {
         assert_eq!(
             primal::Primes::all()
@@ -386,7 +404,7 @@ pub mod paramgen {
         factors
     }
 
-    #[test]
+    //#[test]
     fn test_factor() {
         assert_eq!(factor(40), [2, 20, 4, 10, 5, 8]);
         assert_eq!(factor(41), []);
@@ -415,7 +433,7 @@ pub mod paramgen {
         None
     }
 
-    #[test]
+    //#[test]
     fn test_find_field() {
         assert_eq!(
             find_field(198, 2usize.pow(3), 3usize.pow(2)).unwrap(),
@@ -445,7 +463,7 @@ pub mod paramgen {
         (omega_secrets, omega_shares)
     }
 
-    #[test]
+    //#[test]
     fn test_find_roots() {
         assert_eq!(find_roots(2usize.pow(3), 3usize.pow(2), 433, 5), (354, 150));
         assert_eq!(find_roots(2usize.pow(3), 3usize.pow(3), 433, 5), (354, 17));
@@ -459,7 +477,7 @@ pub mod paramgen {
         (prime, omega_secrets, omega_shares)
     }
 
-    #[test]
+    //#[test]
     fn test_generate_parameters() {
         assert_eq!(
             generate_parameters(200, 2usize.pow(3), 3usize.pow(2)),
@@ -476,7 +494,7 @@ pub mod paramgen {
         e.pow(power) == x
     }
 
-    #[test]
+    //#[test]
     fn test_is_power_of() {
         assert_eq!(is_power_of(4, 2), true);
         assert_eq!(is_power_of(5, 2), false);
@@ -531,7 +549,7 @@ pub mod paramgen {
         }
     }
 
-    #[test]
+    //#[test]
     fn test_new() {
         assert_eq!(
             PackedSecretSharing::new(155, 100, 728),

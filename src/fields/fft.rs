@@ -8,6 +8,8 @@
 
 //! FFT by in-place Cooley-Tukey algorithms.
 
+use std::prelude::v1::*;
+
 use super::Field;
 
 /// 2-radix FFT.
@@ -176,7 +178,7 @@ pub fn fft3_inverse<F: Field>(zp: &F, data: &mut [F::U], omega: F::U) {
     }
 }
 
-#[cfg(test)]
+#[cfg(feature = "with-testing")]
 pub mod test {
     use super::*;
     use crate::fields::Field;

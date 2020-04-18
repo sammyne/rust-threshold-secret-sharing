@@ -97,47 +97,71 @@ pub trait Field {
 
 macro_rules! all_fields_test {
     ($field:ty) => {
-        #[test]
+        pub mod tests {
+            use std::prelude::v1::*;
+
+            use testing::*;
+
+            use super::*;
+
+            pub fn do_rsgx_tests() -> usize {
+                run_tests!(
+                    test_add,
+                    test_convert,
+                    test_fft2,
+                    test_fft2_big,
+                    test_fft2_inverse,
+                    test_fft3,
+                    test_fft3_big,
+                    test_fft3_inverse,
+                    test_mul,
+                    test_qpow,
+                    test_sub
+                )
+            }
+        }
+
+        //#[test]
         fn test_convert() {
             crate::fields::test::test_convert::<$field>();
         }
-        #[test]
+        //#[test]
         fn test_add() {
             crate::fields::test::test_add::<$field>();
         }
-        #[test]
+        //#[test]
         fn test_sub() {
             crate::fields::test::test_sub::<$field>();
         }
-        #[test]
+        //#[test]
         fn test_mul() {
             crate::fields::test::test_mul::<$field>();
         }
-        #[test]
+        //#[test]
         fn test_qpow() {
             crate::fields::test::test_qpow::<$field>();
         }
-        #[test]
+        //#[test]
         fn test_fft2() {
             crate::fields::fft::test::test_fft2::<$field>();
         }
-        #[test]
+        //#[test]
         fn test_fft2_inverse() {
             crate::fields::fft::test::test_fft2_inverse::<$field>();
         }
-        #[test]
+        //#[test]
         fn test_fft2_big() {
             crate::fields::fft::test::test_fft2_big::<$field>();
         }
-        #[test]
+        //#[test]
         fn test_fft3() {
             crate::fields::fft::test::test_fft3::<$field>();
         }
-        #[test]
+        //#[test]
         fn test_fft3_inverse() {
             crate::fields::fft::test::test_fft3_inverse::<$field>();
         }
-        #[test]
+        //#[test]
         fn test_fft3_big() {
             crate::fields::fft::test::test_fft3_big::<$field>();
         }
@@ -147,7 +171,8 @@ macro_rules! all_fields_test {
 pub mod montgomery;
 pub mod native;
 
-#[cfg(test)]
+//#[cfg(test)]
+#[cfg(feature = "with-testing")]
 pub mod test {
     use super::Field;
 

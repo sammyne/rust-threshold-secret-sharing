@@ -23,10 +23,12 @@ edition = "2018"
 travis-ci = { repository = "snipsco/rust-threshold-secret-sharing" }
 
 [features]
+default = []
 paramgen = ["primal"]
+with-testing = ["testing"]
 
 [dependencies]
-rand = "0.3.*"
+#rand = "0.3.*"
 primal = { version = "0.2", optional = true }
 
 [dev-dependencies]
@@ -35,3 +37,18 @@ bencher = "0.1"
 [[bench]]
 name = "packed"
 harness = false
+
+[dependencies.rand]
+git = "https://github.com/apache/teaclave-sgx-sdk"
+package = "sgx_rand"
+rev = "v1.1.1"
+
+[dependencies.sgx_tstd]
+features = ["thread"]
+git = "https://github.com/apache/teaclave-sgx-sdk"
+rev = "v1.1.1"
+
+[dependencies.testing]
+branch = "rsgx1.1.1"
+git = "https://github.com/sammyne/testing-rsgx"
+optional = true

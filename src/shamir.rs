@@ -9,6 +9,8 @@
 //! Standard [Shamir secret sharing](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing)
 //! for a single secret.
 
+use std::prelude::v1::*;
+
 use crate::numtheory::*;
 use rand;
 
@@ -91,7 +93,7 @@ impl ShamirSecretSharing {
         // sample the remaining coefficients randomly using secure randomness
         use rand::distributions::Sample;
         let mut range = rand::distributions::range::Range::new(0, self.prime - 1);
-        let mut rng = rand::OsRng::new().unwrap();
+        let mut rng = rand::SgxRng::new().unwrap();
         let random_coefficients: Vec<i64> = (0..self.threshold)
             .map(|_| range.sample(&mut rng))
             .collect();
@@ -108,7 +110,7 @@ impl ShamirSecretSharing {
     }
 }
 
-#[test]
+#[cfg(feature = "with-testing")]
 fn test_evaluate_polynomial() {
     let ref tss = SHAMIR_5_20;
     let poly = vec![1, 2, 0];
@@ -119,7 +121,7 @@ fn test_evaluate_polynomial() {
     );
 }
 
-#[test]
+#[cfg(feature = "with-testing")]
 fn wikipedia_example() {
     let tss = ShamirSecretSharing {
         threshold: 2,
@@ -135,7 +137,7 @@ fn wikipedia_example() {
     assert_eq!(tss.reconstruct(&[2, 3, 4], &shares[2..5]), 1234);
 }
 
-#[test]
+#[cfg(feature = "with-testing")]
 fn test_shamir() {
     let tss = ShamirSecretSharing {
         threshold: 2,
@@ -147,4 +149,17 @@ fn test_shamir() {
     assert_eq!(tss.reconstruct(&[0, 1, 2], &shares[0..3]), secret);
     assert_eq!(tss.reconstruct(&[1, 2, 3], &shares[1..4]), secret);
     assert_eq!(tss.reconstruct(&[2, 3, 4, 5], &shares[2..6]), secret);
+}
+
+#[cfg(feature = "with-testing")]
+pub mod tests {
+    use std::prelude::v1::*;
+
+    use testing::*;
+
+    use super::*;
+
+    pub fn do_rsgx_tests() -> usize {
+        run_tests!(test_evaluate_polynomial, test_shamir, wikipedia_example)
+    }
 }
