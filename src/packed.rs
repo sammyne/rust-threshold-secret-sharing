@@ -9,7 +9,7 @@
 //! Packed (or ramp) variant of Shamir secret sharing,
 //! allowing efficient sharing of several secrets together.
 
-use numtheory::{mod_pow, fft2_inverse, fft3};
+use crate::numtheory::{fft2_inverse, fft3, mod_pow};
 use rand;
 
 /// Parameters for the packed variant of Shamir secret sharing,
@@ -37,11 +37,9 @@ use rand;
 ///
 /// An optional `paramgen` feature provides methods for finding suitable parameters satisfying
 /// these somewhat complex requirements, in addition to several fixed parameter choices.
-#[derive(Debug,Copy,Clone,PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct PackedSecretSharing {
-
     // abstract properties
-
     /// Maximum number of shares that can be known without exposing the secrets
     /// (privacy threshold).
     pub threshold: usize,
@@ -51,7 +49,6 @@ pub struct PackedSecretSharing {
     pub secret_count: usize,
 
     // implementation configuration
-
     /// Prime defining the Zp field in which computation is taking place.
     pub prime: i64,
     /// `m`-th principal root of unity in Zp, where `m = secret_count + threshold + 1`
@@ -141,8 +138,9 @@ impl PackedSecretSharing {
         use rand::distributions::Sample;
         let mut range = rand::distributions::range::Range::new(0, self.prime - 1);
         let mut rng = rand::OsRng::new().unwrap();
-        let randomness: Vec<i64> =
-            (0..self.threshold).map(|_| range.sample(&mut rng) as i64).collect();
+        let randomness: Vec<i64> = (0..self.threshold)
+            .map(|_| range.sample(&mut rng) as i64)
+            .collect();
         // recover polynomial
         let coefficients = self.recover_polynomial(secrets, randomness);
         assert_eq!(coefficients.len(), self.reconstruct_limit() + 1);
@@ -178,8 +176,8 @@ impl PackedSecretSharing {
     pub fn reconstruct(&self, indices: &[usize], shares: &[i64]) -> Vec<i64> {
         assert!(shares.len() == indices.len());
         assert!(shares.len() >= self.reconstruct_limit());
-        let mut points: Vec<i64> =
-            indices.iter()
+        let mut points: Vec<i64> = indices
+            .iter()
             .map(|&x| mod_pow(self.omega_shares, x as u32 + 1, self.prime))
             .collect();
         let mut values = shares.to_vec();
@@ -187,7 +185,7 @@ impl PackedSecretSharing {
         points.insert(0, 1);
         values.insert(0, 0);
         // interpolate using Newton's method
-        use numtheory::{newton_interpolation_general, newton_evaluate};
+        use crate::numtheory::{newton_evaluate, newton_interpolation_general};
         // TODO optimise by using Newton-equally-space variant
         let poly = newton_interpolation_general(&points, &values, self.prime);
         // evaluate at omega_secrets points to recover secrets
@@ -201,18 +199,17 @@ impl PackedSecretSharing {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
 
     use super::*;
-    use numtheory::*;
+    use crate::numtheory::*;
 
     #[test]
     fn test_recover_polynomial() {
         let ref pss = PSS_4_8_3;
         let secrets = vec![1, 2, 3];
-        let randomness = vec![8, 8, 8, 8];  // use fixed randomness
+        let randomness = vec![8, 8, 8, 8]; // use fixed randomness
         let poly = pss.recover_polynomial(&secrets, randomness);
         assert_eq!(
             positivise(&poly, pss.prime),
@@ -246,7 +243,7 @@ mod tests {
         let mut shares = pss.share(&secrets);
 
         // manually recover secrets
-        use numtheory::{fft3_inverse, mod_evaluate_polynomial};
+        use crate::numtheory::{fft3_inverse, mod_evaluate_polynomial};
         shares.insert(0, 0);
         let poly = fft3_inverse(&shares, PSS_4_26_3.omega_shares, PSS_4_26_3.prime);
         let recovered_secrets: Vec<i64> = (1..secrets.len() + 1)
@@ -259,14 +256,14 @@ mod tests {
             })
             .collect();
 
-        use numtheory::positivise;
+        use crate::numtheory::positivise;
         assert_eq!(positivise(&recovered_secrets, pss.prime), secrets);
     }
 
     #[test]
     fn test_large_share() {
         let ref pss = PSS_155_19682_100;
-        let secrets = vec![5 ; pss.secret_count];
+        let secrets = vec![5; pss.secret_count];
         let shares = pss.share(&secrets);
         assert_eq!(shares.len(), pss.share_count);
     }
@@ -277,7 +274,7 @@ mod tests {
         let secrets = vec![5, 6, 7];
         let shares = pss.share(&secrets);
 
-        use numtheory::positivise;
+        use crate::numtheory::positivise;
 
         // reconstruction must work for all shares
         let indices: Vec<usize> = (0..shares.len()).collect();
@@ -301,8 +298,11 @@ mod tests {
         let shares_2 = pss.share(&secrets_2);
 
         // add shares pointwise
-        let shares_sum: Vec<i64> =
-            shares_1.iter().zip(shares_2).map(|(a, b)| (a + b) % pss.prime).collect();
+        let shares_sum: Vec<i64> = shares_1
+            .iter()
+            .zip(shares_2)
+            .map(|(a, b)| (a + b) % pss.prime)
+            .collect();
 
         // reconstruct sum, using same reconstruction limit
         let reconstruct_limit = pss.reconstruct_limit();
@@ -310,7 +310,7 @@ mod tests {
         let shares = &shares_sum[0..reconstruct_limit];
         let recovered_secrets = pss.reconstruct(&indices, shares);
 
-        use numtheory::positivise;
+        use crate::numtheory::positivise;
         assert_eq!(positivise(&recovered_secrets, pss.prime), vec![5, 7, 9]);
     }
 
@@ -324,8 +324,11 @@ mod tests {
         let shares_2 = pss.share(&secrets_2);
 
         // multiply shares pointwise
-        let shares_product: Vec<i64> =
-            shares_1.iter().zip(shares_2).map(|(a, b)| (a * b) % pss.prime).collect();
+        let shares_product: Vec<i64> = shares_1
+            .iter()
+            .zip(shares_2)
+            .map(|(a, b)| (a * b) % pss.prime)
+            .collect();
 
         // reconstruct product, using double reconstruction limit
         let reconstruct_limit = pss.reconstruct_limit() * 2;
@@ -333,12 +336,10 @@ mod tests {
         let shares = &shares_product[0..reconstruct_limit];
         let recovered_secrets = pss.reconstruct(&indices, shares);
 
-        use numtheory::positivise;
+        use crate::numtheory::positivise;
         assert_eq!(positivise(&recovered_secrets, pss.prime), vec![4, 10, 18]);
     }
-
 }
-
 
 #[doc(hidden)]
 #[cfg(feature = "paramgen")]
@@ -365,7 +366,12 @@ pub mod paramgen {
 
     #[test]
     fn test_check_prime_form() {
-        assert_eq!(primal::Primes::all().find(|p| check_prime_form(198, 8, 9, *p)).unwrap(), 433);
+        assert_eq!(
+            primal::Primes::all()
+                .find(|p| check_prime_form(198, 8, 9, *p))
+                .unwrap(),
+            433
+        );
     }
 
     fn factor(p: usize) -> Vec<usize> {
@@ -388,7 +394,9 @@ pub mod paramgen {
 
     fn find_field(min_p: usize, n: usize, m: usize) -> Option<(i64, i64)> {
         // find prime of right form
-        let p = primal::Primes::all().find(|p| check_prime_form(min_p, n, m, *p)).unwrap();
+        let p = primal::Primes::all()
+            .find(|p| check_prime_form(min_p, n, m, *p))
+            .unwrap();
         // find (any) generator
         let factors = factor(p - 1);
         for g in 2..p {
@@ -396,7 +404,7 @@ pub mod paramgen {
             let is_generator = factors.iter().all(|f| {
                 use numtheory::mod_pow;
                 let e = (p - 1) / f;
-                mod_pow(g as i64, e as u32, p as i64) != 1  // TODO check for negative value
+                mod_pow(g as i64, e as u32, p as i64) != 1 // TODO check for negative value
             });
             // return
             if is_generator {
@@ -409,14 +417,22 @@ pub mod paramgen {
 
     #[test]
     fn test_find_field() {
-        assert_eq!(find_field(198, 2usize.pow(3), 3usize.pow(2)).unwrap(),
-                   (433, 5));
-        assert_eq!(find_field(198, 2usize.pow(3), 3usize.pow(3)).unwrap(),
-                   (433, 5));
-        assert_eq!(find_field(198, 2usize.pow(8), 3usize.pow(6)).unwrap(),
-                   (746497, 5));
-        assert_eq!(find_field(198, 2usize.pow(8), 3usize.pow(9)).unwrap(),
-                   (5038849, 29));
+        assert_eq!(
+            find_field(198, 2usize.pow(3), 3usize.pow(2)).unwrap(),
+            (433, 5)
+        );
+        assert_eq!(
+            find_field(198, 2usize.pow(3), 3usize.pow(3)).unwrap(),
+            (433, 5)
+        );
+        assert_eq!(
+            find_field(198, 2usize.pow(8), 3usize.pow(6)).unwrap(),
+            (746497, 5)
+        );
+        assert_eq!(
+            find_field(198, 2usize.pow(8), 3usize.pow(9)).unwrap(),
+            (5038849, 29)
+        );
 
         // assert_eq!(find_field(198, 2usize.pow(11), 3usize.pow(8)).unwrap(), (120932353, 5));
         // assert_eq!(find_field(198, 2usize.pow(13), 3usize.pow(9)).unwrap(), (483729409, 23));
@@ -445,10 +461,14 @@ pub mod paramgen {
 
     #[test]
     fn test_generate_parameters() {
-        assert_eq!(generate_parameters(200, 2usize.pow(3), 3usize.pow(2)),
-                   (433, 354, 150));
-        assert_eq!(generate_parameters(200, 2usize.pow(3), 3usize.pow(3)),
-                   (433, 354, 17));
+        assert_eq!(
+            generate_parameters(200, 2usize.pow(3), 3usize.pow(2)),
+            (433, 354, 150)
+        );
+        assert_eq!(
+            generate_parameters(200, 2usize.pow(3), 3usize.pow(3)),
+            (433, 354, 17)
+        );
     }
 
     fn is_power_of(x: usize, e: usize) -> bool {
@@ -475,23 +495,23 @@ pub mod paramgen {
     use super::PackedSecretSharing;
 
     impl PackedSecretSharing {
-
         /// Find suitable parameters with as small a prime field as possible.
-        pub fn new(threshold: usize,
-                   secret_count: usize,
-                   share_count: usize)
-                   -> PackedSecretSharing {
+        pub fn new(
+            threshold: usize,
+            secret_count: usize,
+            share_count: usize,
+        ) -> PackedSecretSharing {
             let min_size = share_count + secret_count + threshold + 1;
             Self::new_with_min_size(threshold, secret_count, share_count, min_size)
         }
 
         /// Find suitable parameters with a prime field of at least the specified size.
-        pub fn new_with_min_size(threshold: usize,
-                                 secret_count: usize,
-                                 share_count: usize,
-                                 min_size: usize)
-                                 -> PackedSecretSharing {
-
+        pub fn new_with_min_size(
+            threshold: usize,
+            secret_count: usize,
+            share_count: usize,
+            min_size: usize,
+        ) -> PackedSecretSharing {
             let m = threshold + secret_count + 1;
             let n = share_count + 1;
             assert!(is_power_of(m, 2));
@@ -513,12 +533,17 @@ pub mod paramgen {
 
     #[test]
     fn test_new() {
-        assert_eq!(PackedSecretSharing::new(155, 100, 728),
-                   super::PSS_155_728_100);
-        assert_eq!(PackedSecretSharing::new_with_min_size(4, 3, 8, 200),
-                   super::PSS_4_8_3);
-        assert_eq!(PackedSecretSharing::new_with_min_size(4, 3, 26, 200),
-                   super::PSS_4_26_3);
+        assert_eq!(
+            PackedSecretSharing::new(155, 100, 728),
+            super::PSS_155_728_100
+        );
+        assert_eq!(
+            PackedSecretSharing::new_with_min_size(4, 3, 8, 200),
+            super::PSS_4_8_3
+        );
+        assert_eq!(
+            PackedSecretSharing::new_with_min_size(4, 3, 26, 200),
+            super::PSS_4_26_3
+        );
     }
-
 }

@@ -11,7 +11,7 @@
 use super::Field;
 
 /// MontgomeryField32 Value (wraps an u32 for type-safety).
-#[derive(Copy,Clone,Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct Value(u32);
 
 /// Implementation of Field with Montgomery modular multiplication.
@@ -27,26 +27,26 @@ pub struct Value(u32);
 pub struct MontgomeryField32 {
     pub n: u32, // the prime
     pub n_quote: u32,
-    pub r_inv: u32, // r = 2^32
+    pub r_inv: u32,  // r = 2^32
     pub r_cube: u32, // r^3 is used by inv()
 }
 
 impl MontgomeryField32 {
     pub fn new(prime: u32) -> MontgomeryField32 {
         let r = 1u64 << 32;
-        let tmp = ::numtheory::mod_inverse(r as i64, prime as i64);
+        let tmp = crate::numtheory::mod_inverse(r as i64, prime as i64);
         let r_inv = if tmp < 0 {
             (tmp + prime as i64) as u32
         } else {
             tmp as u32
         };
-        let tmp = ::numtheory::mod_inverse(prime as i64, r as i64);
+        let tmp = crate::numtheory::mod_inverse(prime as i64, r as i64);
         let n_quote = if tmp > 0 {
             (r as i64 - tmp) as u32
         } else {
             (r as i64 - tmp) as u32
         };
-        let r_cube = ::numtheory::mod_pow(r as i64 % prime as i64, 3u32, prime as i64);
+        let r_cube = crate::numtheory::mod_pow(r as i64 % prime as i64, 3u32, prime as i64);
         MontgomeryField32 {
             n: prime,
             r_inv: r_inv,
@@ -91,7 +91,7 @@ impl Field for MontgomeryField32 {
     }
 
     fn inv(&self, a: Self::U) -> Self::U {
-        let ar_modn_inv = ::numtheory::mod_inverse(a.0 as i64, self.n as i64);
+        let ar_modn_inv = crate::numtheory::mod_inverse(a.0 as i64, self.n as i64);
         self.redc((ar_modn_inv as u64).wrapping_mul(self.r_cube as u64))
     }
 

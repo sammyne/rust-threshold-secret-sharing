@@ -8,11 +8,10 @@
 extern crate threshold_secret_sharing as tss;
 
 fn main() {
-
     let ref tss = tss::shamir::ShamirSecretSharing {
         threshold: 9,
         share_count: 20,
-        prime: 41  // any large enough prime will do
+        prime: 41, // any large enough prime will do
     };
 
     let secret = 5;
@@ -27,5 +26,4 @@ fn main() {
 
     println!("The recovered secret is {}", recovered_secret);
     assert_eq!(recovered_secret, secret);
-
 }

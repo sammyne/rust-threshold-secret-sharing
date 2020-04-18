@@ -93,7 +93,10 @@ fn fft3_in_place_rearrange<F: Field>(_zp: &F, data: &mut [F::U]) {
     let mut target = 0isize;
     let trigits_len = trigits_len(data.len() - 1);
     let mut trigits: Vec<u8> = ::std::iter::repeat(0).take(trigits_len).collect();
-    let powers: Vec<isize> = (0..trigits_len).map(|x| 3isize.pow(x as u32)).rev().collect();
+    let powers: Vec<isize> = (0..trigits_len)
+        .map(|x| 3isize.pow(x as u32))
+        .rev()
+        .collect();
     for pos in 0..data.len() {
         if target as usize > pos {
             data.swap(target as usize, pos)
@@ -123,9 +126,11 @@ fn fft3_in_place_compute<F: Field>(zp: &F, data: &mut [F::U], omega: F::U) {
             let factor_sq = zp.mul(factor, factor);
             let mut pair = group;
             while pair < data.len() {
-                let (x, y, z) = (data[pair],
-                                 zp.mul(data[pair + step], factor),
-                                 zp.mul(data[pair + 2 * step], factor_sq));
+                let (x, y, z) = (
+                    data[pair],
+                    zp.mul(data[pair + step], factor),
+                    zp.mul(data[pair + 2 * step], factor_sq),
+                );
 
                 data[pair] = zp.add(zp.add(x, y), z);
                 data[pair + step] =
@@ -174,7 +179,7 @@ pub fn fft3_inverse<F: Field>(zp: &F, data: &mut [F::U], omega: F::U) {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use fields::Field;
+    use crate::fields::Field;
 
     pub fn from<F: Field>(zp: &F, data: &[u64]) -> Vec<F::U> {
         data.iter().map(|&x| zp.from_u64(x)).collect()

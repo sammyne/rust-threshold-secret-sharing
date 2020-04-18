@@ -10,8 +10,7 @@
 
 use super::Field;
 
-
-#[derive(Copy,Clone,Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct Value(i64);
 
 /// Trivial implementaion of Field using i64 values and performing a native
@@ -20,7 +19,7 @@ pub struct Value(i64);
 /// Actual values show not exceed the u32 or i32 ranges as multiplication
 /// are performed "naively".
 ///
-/// The mais purpose of this struct is to serve as a test reference to the 
+/// The mais purpose of this struct is to serve as a test reference to the
 /// more challenging implementations.
 pub struct NativeField(i64);
 
@@ -61,7 +60,7 @@ impl Field for NativeField {
     }
 
     fn inv(&self, a: Self::U) -> Self::U {
-        let tmp = ::numtheory::mod_inverse((a.0 % self.0) as i64, self.0 as i64);
+        let tmp = crate::numtheory::mod_inverse((a.0 % self.0) as i64, self.0 as i64);
         self.from_i64(tmp)
     }
 }

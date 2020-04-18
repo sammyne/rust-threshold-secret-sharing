@@ -26,7 +26,6 @@ fn test_gcd() {
     assert_eq!(gcd(12, 16), (4, -1, 1));
 }
 
-
 /// Inverse of `k` in the *Zp* field defined by `prime`.
 pub fn mod_inverse(k: i64, prime: i64) -> i64 {
     let k2 = k % prime;
@@ -42,7 +41,6 @@ pub fn mod_inverse(k: i64, prime: i64) -> i64 {
 fn test_mod_inverse() {
     assert_eq!(mod_inverse(3, 7), 5);
 }
-
 
 /// `x` to the power of `e` in the *Zp* field defined by `prime`.
 pub fn mod_pow(mut x: i64, mut e: u32, prime: i64) -> i64 {
@@ -72,7 +70,6 @@ fn test_mod_pow() {
     assert_eq!(mod_pow(-3, 15, 17), -6);
 }
 
-
 /// Compute the 2-radix FFT of `a_coef` in the *Zp* field defined by `prime`.
 ///
 /// `omega` must be a `n`-th principal root of unity,
@@ -80,21 +77,21 @@ fn test_mod_pow() {
 /// The result will contains the same number of elements.
 #[allow(dead_code)]
 pub fn fft2(a_coef: &[i64], omega: i64, prime: i64) -> Vec<i64> {
-    use fields::Field;
-    let zp = ::fields::montgomery::MontgomeryField32::new(prime as u32);
+    use crate::fields::Field;
+    let zp = crate::fields::montgomery::MontgomeryField32::new(prime as u32);
 
     let mut data = a_coef.iter().map(|&a| zp.from_i64(a)).collect::<Vec<_>>();
-    ::fields::fft::fft2(&zp, &mut *data, zp.from_i64(omega));
+    crate::fields::fft::fft2(&zp, &mut *data, zp.from_i64(omega));
     data.iter().map(|a| zp.to_i64(*a)).collect()
 }
 
 /// Inverse FFT for `fft2`.
 pub fn fft2_inverse(a_point: &[i64], omega: i64, prime: i64) -> Vec<i64> {
-    use fields::Field;
-    let zp = ::fields::montgomery::MontgomeryField32::new(prime as u32);
+    use crate::fields::Field;
+    let zp = crate::fields::montgomery::MontgomeryField32::new(prime as u32);
 
     let mut data = a_point.iter().map(|&a| zp.from_i64(a)).collect::<Vec<_>>();
-    ::fields::fft::fft2_inverse(&zp, &mut *data, zp.from_i64(omega));
+    crate::fields::fft::fft2_inverse(&zp, &mut *data, zp.from_i64(omega));
     data.iter().map(|a| zp.to_i64(*a)).collect()
 }
 
@@ -106,8 +103,10 @@ fn test_fft2() {
 
     let a_coef = vec![1, 2, 3, 4, 5, 6, 7, 8];
     let a_point = fft2(&a_coef, omega, prime);
-    assert_eq!(positivise(&a_point, prime),
-               positivise(&[36, -130, -287, 3, -4, 422, 279, -311], prime))
+    assert_eq!(
+        positivise(&a_point, prime),
+        positivise(&[36, -130, -287, 3, -4, 422, 279, -311], prime)
+    )
 }
 
 #[test]
@@ -127,22 +126,22 @@ fn test_fft2_inverse() {
 /// where `n` is the lenght of `a_coef` as well as a power of 3.
 /// The result will contains the same number of elements.
 pub fn fft3(a_coef: &[i64], omega: i64, prime: i64) -> Vec<i64> {
-    use fields::Field;
-    let zp = ::fields::montgomery::MontgomeryField32::new(prime as u32);
+    use crate::fields::Field;
+    let zp = crate::fields::montgomery::MontgomeryField32::new(prime as u32);
 
     let mut data = a_coef.iter().map(|&a| zp.from_i64(a)).collect::<Vec<_>>();
-    ::fields::fft::fft3(&zp, &mut *data, zp.from_i64(omega));
+    crate::fields::fft::fft3(&zp, &mut *data, zp.from_i64(omega));
     data.iter().map(|a| zp.to_i64(*a)).collect()
 }
 
 /// Inverse FFT for `fft3`.
 #[allow(dead_code)]
 pub fn fft3_inverse(a_point: &[i64], omega: i64, prime: i64) -> Vec<i64> {
-    use fields::Field;
-    let zp = ::fields::montgomery::MontgomeryField32::new(prime as u32);
+    use crate::fields::Field;
+    let zp = crate::fields::montgomery::MontgomeryField32::new(prime as u32);
 
     let mut data = a_point.iter().map(|&a| zp.from_i64(a)).collect::<Vec<_>>();
-    ::fields::fft::fft3_inverse(&zp, &mut *data, zp.from_i64(omega));
+    crate::fields::fft::fft3_inverse(&zp, &mut *data, zp.from_i64(omega));
     data.iter().map(|a| zp.to_i64(*a)).collect()
 }
 
@@ -205,14 +204,14 @@ pub struct NewtonPolynomial<'a> {
     coefficients: Vec<i64>,
 }
 
-
 /// General case for Newton interpolation in field Zp.
 ///
 /// Given enough `points` (x) and `values` (p(x)), find the coefficients for `p`.
-pub fn newton_interpolation_general<'a>(points: &'a [i64],
-                                        values: &[i64],
-                                        prime: i64)
-                                        -> NewtonPolynomial<'a> {
+pub fn newton_interpolation_general<'a>(
+    points: &'a [i64],
+    values: &[i64],
+    prime: i64,
+) -> NewtonPolynomial<'a> {
     let coefficients = compute_newton_coefficients(points, values, prime);
     NewtonPolynomial {
         points: points,
@@ -226,13 +225,17 @@ fn test_newton_interpolation_general() {
 
     let poly = [1, 2, 3, 4];
     let points = vec![5, 6, 7, 8, 9];
-    let values: Vec<i64> =
-        points.iter().map(|&point| mod_evaluate_polynomial(&poly, point, prime)).collect();
+    let values: Vec<i64> = points
+        .iter()
+        .map(|&point| mod_evaluate_polynomial(&poly, point, prime))
+        .collect();
     assert_eq!(values, vec![8, 16, 4, 13, 16]);
 
     let recovered_poly = newton_interpolation_general(&points, &values, prime);
-    let recovered_values: Vec<i64> =
-        points.iter().map(|&point| newton_evaluate(&recovered_poly, point, prime)).collect();
+    let recovered_values: Vec<i64> = points
+        .iter()
+        .map(|&point| newton_evaluate(&recovered_poly, point, prime))
+        .collect();
     assert_eq!(recovered_values, values);
 
     assert_eq!(newton_evaluate(&recovered_poly, 10, prime), 3);
@@ -250,7 +253,8 @@ pub fn newton_evaluate(poly: &NewtonPolynomial, point: i64, prime: i64) -> i64 {
     }
     let ref newton_coefs = poly.coefficients;
     // sum up
-    newton_coefs.iter()
+    newton_coefs
+        .iter()
         .zip(newton_points)
         .map(|(coef, point)| (coef * point) % prime)
         .fold(0, |a, b| (a + b) % prime)
@@ -259,8 +263,11 @@ pub fn newton_evaluate(poly: &NewtonPolynomial, point: i64, prime: i64) -> i64 {
 fn compute_newton_coefficients(points: &[i64], values: &[i64], prime: i64) -> Vec<i64> {
     assert_eq!(points.len(), values.len());
 
-    let mut store: Vec<(usize, usize, i64)> =
-        values.iter().enumerate().map(|(index, &value)| (index, index, value)).collect();
+    let mut store: Vec<(usize, usize, i64)> = values
+        .iter()
+        .enumerate()
+        .map(|(index, &value)| (index, index, value))
+        .collect();
 
     for j in 1..store.len() {
         for i in (j..store.len()).rev() {
@@ -297,7 +304,8 @@ fn test_compute_newton_coefficients() {
 
 /// Map `values` from `[-n/2, n/2)` to `[0, n)`.
 pub fn positivise(values: &[i64], n: i64) -> Vec<i64> {
-    values.iter()
+    values
+        .iter()
         .map(|&value| if value < 0 { value + n } else { value })
         .collect()
 }

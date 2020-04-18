@@ -9,8 +9,8 @@
 //! Standard [Shamir secret sharing](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing)
 //! for a single secret.
 
+use crate::numtheory::*;
 use rand;
-use numtheory::*;
 
 /// Parameters for the Shamir scheme, specifying privacy threshold and total number of shares.
 ///
@@ -92,8 +92,9 @@ impl ShamirSecretSharing {
         use rand::distributions::Sample;
         let mut range = rand::distributions::range::Range::new(0, self.prime - 1);
         let mut rng = rand::OsRng::new().unwrap();
-        let random_coefficients: Vec<i64> =
-            (0..self.threshold).map(|_| range.sample(&mut rng)).collect();
+        let random_coefficients: Vec<i64> = (0..self.threshold)
+            .map(|_| range.sample(&mut rng))
+            .collect();
         coefficients.extend(random_coefficients);
         // return
         coefficients
@@ -107,14 +108,15 @@ impl ShamirSecretSharing {
     }
 }
 
-
 #[test]
 fn test_evaluate_polynomial() {
     let ref tss = SHAMIR_5_20;
     let poly = vec![1, 2, 0];
     let values = tss.evaluate_polynomial(&poly);
-    assert_eq!(*values,
-               [3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 0]);
+    assert_eq!(
+        *values,
+        [3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 0]
+    );
 }
 
 #[test]

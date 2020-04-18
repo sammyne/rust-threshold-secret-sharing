@@ -88,7 +88,7 @@ pub trait Field {
                 // odd
                 acc = self.mul(acc, x);
             }
-            x = self.mul(x, x);  // waste one of these by having it here but code is simpler (tiny bit)
+            x = self.mul(x, x); // waste one of these by having it here but code is simpler (tiny bit)
             e = e >> 1;
         }
         acc
@@ -97,22 +97,55 @@ pub trait Field {
 
 macro_rules! all_fields_test {
     ($field:ty) => {
-        #[test] fn test_convert() { ::fields::test::test_convert::<$field>(); }
-        #[test] fn test_add() { ::fields::test::test_add::<$field>(); }
-        #[test] fn test_sub() { ::fields::test::test_sub::<$field>(); }
-        #[test] fn test_mul() { ::fields::test::test_mul::<$field>(); }
-        #[test] fn test_qpow() { ::fields::test::test_qpow::<$field>(); }
-        #[test] fn test_fft2() { ::fields::fft::test::test_fft2::<$field>(); }
-        #[test] fn test_fft2_inverse() { ::fields::fft::test::test_fft2_inverse::<$field>(); }
-        #[test] fn test_fft2_big() { ::fields::fft::test::test_fft2_big::<$field>(); }
-        #[test] fn test_fft3() { ::fields::fft::test::test_fft3::<$field>(); }
-        #[test] fn test_fft3_inverse() { ::fields::fft::test::test_fft3_inverse::<$field>(); }
-        #[test] fn test_fft3_big() { ::fields::fft::test::test_fft3_big::<$field>(); }
-    }
+        #[test]
+        fn test_convert() {
+            crate::fields::test::test_convert::<$field>();
+        }
+        #[test]
+        fn test_add() {
+            crate::fields::test::test_add::<$field>();
+        }
+        #[test]
+        fn test_sub() {
+            crate::fields::test::test_sub::<$field>();
+        }
+        #[test]
+        fn test_mul() {
+            crate::fields::test::test_mul::<$field>();
+        }
+        #[test]
+        fn test_qpow() {
+            crate::fields::test::test_qpow::<$field>();
+        }
+        #[test]
+        fn test_fft2() {
+            crate::fields::fft::test::test_fft2::<$field>();
+        }
+        #[test]
+        fn test_fft2_inverse() {
+            crate::fields::fft::test::test_fft2_inverse::<$field>();
+        }
+        #[test]
+        fn test_fft2_big() {
+            crate::fields::fft::test::test_fft2_big::<$field>();
+        }
+        #[test]
+        fn test_fft3() {
+            crate::fields::fft::test::test_fft3::<$field>();
+        }
+        #[test]
+        fn test_fft3_inverse() {
+            crate::fields::fft::test::test_fft3_inverse::<$field>();
+        }
+        #[test]
+        fn test_fft3_big() {
+            crate::fields::fft::test::test_fft3_big::<$field>();
+        }
+    };
 }
 
-pub mod native;
 pub mod montgomery;
+pub mod native;
 
 #[cfg(test)]
 pub mod test {
@@ -134,16 +167,22 @@ pub mod test {
     pub fn test_sub<F: Field>() {
         let zp = F::new(17);
         assert_eq!(zp.to_u64(zp.sub(zp.from_u64(8), zp.from_u64(2))), 6);
-        assert_eq!(zp.to_u64(zp.sub(zp.from_u64(8), zp.from_u64(13))),
-                   (17 + 8 - 13) % 17);
+        assert_eq!(
+            zp.to_u64(zp.sub(zp.from_u64(8), zp.from_u64(13))),
+            (17 + 8 - 13) % 17
+        );
     }
 
     pub fn test_mul<F: Field>() {
         let zp = F::new(17);
-        assert_eq!(zp.to_u64(zp.mul(zp.from_u64(8), zp.from_u64(2))),
-                   (8 * 2) % 17);
-        assert_eq!(zp.to_u64(zp.mul(zp.from_u64(8), zp.from_u64(5))),
-                   (8 * 5) % 17);
+        assert_eq!(
+            zp.to_u64(zp.mul(zp.from_u64(8), zp.from_u64(2))),
+            (8 * 2) % 17
+        );
+        assert_eq!(
+            zp.to_u64(zp.mul(zp.from_u64(8), zp.from_u64(5))),
+            (8 * 5) % 17
+        );
     }
 
     pub fn test_qpow<F: Field>() {

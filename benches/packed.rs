@@ -22,9 +22,10 @@ mod shamir_vs_packed {
             prime: 746497,
         };
 
-        let all_secrets: Vec<i64> = vec![5 ; 100 ];
+        let all_secrets: Vec<i64> = vec![5; 100];
         b.iter(|| {
-            let _shares: Vec<Vec<i64>> = all_secrets.iter()
+            let _shares: Vec<Vec<i64>> = all_secrets
+                .iter()
                 .map(|&secret| tss.share(secret))
                 .collect();
         });
@@ -33,18 +34,18 @@ mod shamir_vs_packed {
     pub fn bench_100_packed(b: &mut Bencher) {
         use tss::packed::*;
         let ref pss = PSS_155_728_100;
-        let all_secrets: Vec<i64> = vec![5 ; 100];
+        let all_secrets: Vec<i64> = vec![5; 100];
         b.iter(|| {
             let _shares = pss.share(&all_secrets);
         })
     }
-
 }
 
-benchmark_group!(shamir_vs_packed,
-                 shamir_vs_packed::bench_100_shamir,
-                 shamir_vs_packed::bench_100_packed);
-
+benchmark_group!(
+    shamir_vs_packed,
+    shamir_vs_packed::bench_100_shamir,
+    shamir_vs_packed::bench_100_packed
+);
 
 mod packed {
 
@@ -53,9 +54,10 @@ mod packed {
 
     pub fn bench_large_secret_count(b: &mut Bencher) {
         let ref pss = PSS_155_728_100;
-        let all_secrets = vec![5 ; pss.secret_count * 100];
+        let all_secrets = vec![5; pss.secret_count * 100];
         b.iter(|| {
-            let _shares: Vec<Vec<i64>> = all_secrets.chunks(pss.secret_count)
+            let _shares: Vec<Vec<i64>> = all_secrets
+                .chunks(pss.secret_count)
                 .map(|secrets| pss.share(&secrets))
                 .collect();
         });
@@ -63,7 +65,7 @@ mod packed {
 
     pub fn bench_large_share_count(b: &mut Bencher) {
         let ref pss = PSS_155_19682_100;
-        let secrets = vec![5 ; pss.secret_count];
+        let secrets = vec![5; pss.secret_count];
         b.iter(|| {
             let _shares = pss.share(&secrets);
         });
@@ -71,7 +73,7 @@ mod packed {
 
     pub fn bench_large_reconstruct(b: &mut Bencher) {
         let ref pss = PSS_155_19682_100;
-        let secrets = vec![5 ; pss.secret_count];
+        let secrets = vec![5; pss.secret_count];
         let all_shares = pss.share(&secrets);
 
         // reconstruct using minimum number of shares required
@@ -82,12 +84,13 @@ mod packed {
             let _recovered_secrets = pss.reconstruct(&indices, &shares);
         });
     }
-
 }
 
-benchmark_group!(packed,
-                 packed::bench_large_secret_count,
-                 packed::bench_large_share_count,
-                 packed::bench_large_reconstruct);
+benchmark_group!(
+    packed,
+    packed::bench_large_secret_count,
+    packed::bench_large_share_count,
+    packed::bench_large_reconstruct
+);
 
 benchmark_main!(shamir_vs_packed, packed);

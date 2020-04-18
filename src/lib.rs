@@ -19,5 +19,5 @@ mod fields;
 mod numtheory;
 pub use numtheory::positivise;
 
-pub mod shamir;
 pub mod packed;
+pub mod shamir;
