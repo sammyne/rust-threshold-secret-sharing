@@ -9,6 +9,11 @@
 //! Standard [Shamir secret sharing](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing)
 //! for a single secret.
 
+use std::prelude::v1::*;
+
+#[cfg(feature = "with-testing")]
+use testing::test;
+
 use crate::numtheory::*;
 use rand;
 
@@ -91,7 +96,7 @@ impl ShamirSecretSharing {
         // sample the remaining coefficients randomly using secure randomness
         use rand::distributions::Sample;
         let mut range = rand::distributions::range::Range::new(0, self.prime - 1);
-        let mut rng = rand::OsRng::new().unwrap();
+        let mut rng = rand::SgxRng::new().unwrap();
         let random_coefficients: Vec<i64> = (0..self.threshold)
             .map(|_| range.sample(&mut rng))
             .collect();

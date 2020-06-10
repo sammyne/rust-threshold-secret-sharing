@@ -108,5 +108,5 @@ impl Field for MontgomeryField32 {
     }
 }
 
-#[cfg(test)]
+#[cfg(feature = "with-testing")]
 all_fields_test!(MontgomeryField32);

@@ -97,6 +97,8 @@ pub trait Field {
 
 macro_rules! all_fields_test {
     ($field:ty) => {
+        use testing::test;
+
         #[test]
         fn test_convert() {
             crate::fields::test::test_convert::<$field>();
@@ -147,7 +149,8 @@ macro_rules! all_fields_test {
 pub mod montgomery;
 pub mod native;
 
-#[cfg(test)]
+//#[cfg(test)]
+#[cfg(feature = "with-testing")]
 pub mod test {
     use super::Field;
 

@@ -3,6 +3,7 @@
 [![Build Status](https://travis-ci.org/snipsco/rust-threshold-secret-sharing.svg?branch=master)](https://travis-ci.org/snipsco/rust-threshold-secret-sharing)
 [![Latest version](https://img.shields.io/crates/v/threshold-secret-sharing.svg)](https://img.shields.io/crates/v/threshold-secret-sharing.svg)
 [![License: MIT/Apache2](https://img.shields.io/badge/license-MIT%2fApache2-blue.svg)](https://img.shields.io/badge/license-MIT%2fApache2-blue.svg)
+![rsgx](https://github.com/sammyne/rust-threshold-secret-sharing/workflows/rsgx/badge.svg?branch=rsgx1.1.2)
 
 Efficient pure-Rust library for [secret sharing](https://en.wikipedia.org/wiki/Secret_sharing), offering efficient share generation and reconstruction for both traditional Shamir sharing and packet sharing. For now, secrets and shares are fixed as prime field elements represented by `i64` values.
 

@@ -65,5 +65,5 @@ impl Field for NativeField {
     }
 }
 
-#[cfg(test)]
+#[cfg(feature = "with-testing")]
 all_fields_test!(NativeField);

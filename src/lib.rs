@@ -13,6 +13,11 @@
 //! For now, secrets and shares are fixed as prime field elements
 //! represented by `i64` values.
 
+#![no_std]
+
+#[macro_use]
+extern crate sgx_tstd as std;
+
 extern crate rand;
 
 mod fields;
@@ -21,3 +26,12 @@ pub use numtheory::positivise;
 
 pub mod packed;
 pub mod shamir;
+
+#[cfg(feature = "with-testing")]
+pub mod tests {
+    use std::prelude::v1::*;
+
+    use testing::generate_runner;
+
+    generate_runner!();
+}

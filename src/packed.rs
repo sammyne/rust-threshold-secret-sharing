@@ -9,6 +9,8 @@
 //! Packed (or ramp) variant of Shamir secret sharing,
 //! allowing efficient sharing of several secrets together.
 
+use std::prelude::v1::*;
+
 use crate::numtheory::{fft2_inverse, fft3, mod_pow};
 use rand;
 
@@ -137,7 +139,7 @@ impl PackedSecretSharing {
         // sample randomness using secure randomness
         use rand::distributions::Sample;
         let mut range = rand::distributions::range::Range::new(0, self.prime - 1);
-        let mut rng = rand::OsRng::new().unwrap();
+        let mut rng = rand::SgxRng::new().unwrap();
         let randomness: Vec<i64> = (0..self.threshold)
             .map(|_| range.sample(&mut rng) as i64)
             .collect();
@@ -199,8 +201,12 @@ impl PackedSecretSharing {
     }
 }
 
-#[cfg(test)]
+//#[cfg(test)]
+#[cfg(feature = "with-testing")]
 mod tests {
+    use std::prelude::v1::*;
+
+    use testing::test;
 
     use super::*;
     use crate::numtheory::*;
@@ -348,6 +354,9 @@ pub mod paramgen {
     //! Optional helper methods for parameter generation
 
     extern crate primal;
+
+    #[cfg(feature = "with-testing")]
+    use testing::test;
 
     #[cfg_attr(rustfmt, rustfmt_skip)]
     fn check_prime_form(min_p: usize, n: usize, m: usize, p: usize) -> bool {
